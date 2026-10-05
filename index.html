@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Para você</title>
+<style>
+:root{--ink:#4b3b2e;--cream:#f4ead8;--wood1:#b79269;--wood2:#9d744d}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{font-family:Georgia,serif;color:var(--ink);touch-action:none;-webkit-user-select:none;user-select:none}button,input{font:inherit}
+.hidden{display:none!important}
+
+/* ---------- TELA DA DATA ---------- */
+#lock{position:fixed;inset:0;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 28%,#fff9ef,transparent 42%),linear-gradient(135deg,#f2eadc,#e2d5c2)}
+.lock-card{width:min(440px,94vw);padding:42px 30px 34px;border:1px solid #0001;border-radius:26px;text-align:center;background:#fffaf4c9;box-shadow:0 30px 80px #38241429;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.lock-card h1{margin:0 0 10px;font-weight:400;font-size:31px}.lock-card p{margin:0 auto 24px;max-width:330px;line-height:1.65;color:#7b6857}
+#dateInput{width:100%;padding:15px;border-radius:13px;border:1px solid #d2bea2;background:#fffaf1;outline:none;text-align:center;-webkit-user-select:text;user-select:text}
+#openBtn{width:100%;margin-top:12px;padding:15px;border:0;border-radius:13px;color:#fffaf0;background:#5b4939}
+#error{min-height:22px;margin-top:12px;color:#98655c;font-size:13px}
+
+/* ---------- MESA ---------- */
+#experience{position:fixed;inset:0;overflow:hidden;background:radial-gradient(circle at 20% 12%,#fff3,transparent 30%),repeating-linear-gradient(8deg,#4d301c0a 0 2px,transparent 2px 15px),linear-gradient(135deg,var(--wood1),var(--wood2))}
+#experience:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 42%,#301d0f31)}
+.scene-title{position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:20;color:#fbf0de;font-size:14px;letter-spacing:.08em;text-shadow:0 2px 7px #23160c59;pointer-events:none}
+
+/* ---------- SELO ---------- */
+.wax-seal{position:absolute;left:50%;top:57%;width:76px;height:76px;transform:translate(-50%,-50%);border-radius:50%;z-index:12;display:grid;place-items:center;
+  background:radial-gradient(circle at 32% 25%,#b86d61 0 14%,transparent 15%),radial-gradient(circle at 37% 30%,#8e4a42 0 49%,#713a34 67%,#5a302c 100%);
+  border:3px solid #5a302c;box-shadow:0 7px 10px rgba(42,20,12,.25),inset 6px 5px 10px rgba(255,175,160,.22),inset -7px -7px 12px rgba(35,14,11,.3);
+  cursor:pointer;touch-action:none;transition:transform .5s cubic-bezier(.18,.85,.2,1),opacity .4s}
+.wax-seal span{font-size:24px;color:#e9b4a9;text-shadow:0 1px 2px #3f1d19}
+.wax-seal:active{transform:translate(-50%,-50%) scale(.88) rotate(-5deg)}
+.wax-seal.broken{opacity:0;pointer-events:none;transform:translate(-50%,-35%) scale(1.4) rotate(15deg)}
+.envelope.seal-broken .env-flap{cursor:grab}
+
+/* ---------- ENVELOPE ---------- */
+.envelope-holder{position:absolute;inset:0;display:grid;place-items:center;z-index:6;transition:transform 1s cubic-bezier(.18,.8,.18,1)}
+.envelope-stage.envelope-away .envelope-holder{transform:translate(-135px,135px) scale(.68) rotate(-6deg)}
+.envelope-stage{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:min(470px,86vw);aspect-ratio:1.55;perspective:1250px;z-index:6}
+.envelope{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.18,.8,.18,1)}
+.env-back,.env-pocket{position:absolute;inset:0;border-radius:16px;overflow:hidden;box-shadow:0 28px 52px #29180d47}
+.env-back{background:linear-gradient(150deg,#efe0c9,#dcc7a6);border:1px solid #5a412e2e}
+.env-back:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent 49.5%,#5b432b24 50%,transparent 50.5%),linear-gradient(45deg,transparent 49.5%,#5b432b1a 50%,transparent 50.5%)}
+.env-back-text{position:absolute;inset:0;display:grid;place-items:center;padding:35px;text-align:center;font-size:31px;line-height:1.1;color:#634e3a;font-family:"Brush Script MT","Segoe Script",cursive;transform:rotate(-4deg)}
+.env-pocket{z-index:5;background:linear-gradient(155deg,#ffffff2e,transparent 45%),linear-gradient(135deg,#f4e7d3,#e1cfb3)}
+.env-flap{position:absolute;left:0;top:0;width:100%;height:62%;z-index:8;background:linear-gradient(150deg,#f7ead6,#dec7a3);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:50% 0;transition:transform 1.05s cubic-bezier(.14,.82,.18,1);filter:drop-shadow(0 6px 5px #311d0f1f)}
+.env-word{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);z-index:9;white-space:nowrap;pointer-events:none;font-family:"Brush Script MT","Segoe Script",cursive;font-size:45px;color:#5b4938;transition:opacity .35s}
+.envelope.closed .env-flap{transform:rotateX(0)}.envelope.open .env-flap{transform:rotateX(-160deg)}.envelope.open .env-word{opacity:0}
+
+/* ---------- CARTA (fixa no centro, gira sobre o próprio eixo) ---------- */
+.letter{
+  --ar:.705;
+  position:absolute;left:50%;top:50%;
+  aspect-ratio:var(--ar);
+  width:min(340px,78vw,calc((100vh - 170px) * var(--ar)));
+  width:min(340px,78vw,calc((100dvh - 170px) * var(--ar)));
+  transform:translate(-50%,-50%) translateY(120px) scale(.92);
+  opacity:0;z-index:15;pointer-events:none;
+  perspective:1400px;-webkit-perspective:1400px;
+  transition:transform 1.3s cubic-bezier(.16,.84,.22,1),opacity .45s ease;
+}
+#experience.letter-out .letter{opacity:1;transform:translate(-50%,-50%) translateY(-20px) scale(1)}
+.letter.table{pointer-events:auto;transform:translate(-50%,-50%);transition:transform .8s cubic-bezier(.18,.84,.2,1),opacity .4s}
+#experience.letter-out .letter.table{transform:translate(-50%,-50%)}
+.letter-card{position:absolute;inset:0;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transition:transform .7s cubic-bezier(.18,.83,.2,1);cursor:grab;touch-action:none}
+.letter.dragging .letter-card{transition:none;cursor:grabbing}
+.letter-face{position:absolute;inset:0;overflow:hidden;border:0;border-radius:0;
+  -webkit-backface-visibility:hidden;backface-visibility:hidden;
+  background:radial-gradient(circle at 24% 18%,#785b3a14,transparent 28%),repeating-linear-gradient(0deg,#624b3205 0 1px,transparent 1px 4px),var(--cream);
+  box-shadow:0 20px 34px #2a180d3d}
+.letter-back{transform:rotateY(180deg);padding:22px 25px}
+.fake-note{position:absolute;left:26px;top:23px;font-family:"Brush Script MT","Segoe Script",cursive;font-size:20px;opacity:.35;transform:rotate(-2deg)}
+.fake-lines{position:absolute;left:21px;right:21px;top:64px;opacity:.22}.fake-lines i{display:block;height:26px;border-bottom:1px solid #9a8873}
+.fake-back{font-family:"Brush Script MT","Segoe Script",cursive;font-size:23px;opacity:.36;transform:rotate(-4deg);margin-top:11px}
+.fake-back-lines{position:absolute;left:25px;right:25px;top:82px;opacity:.18}.fake-back-lines i{display:block;height:27px;border-bottom:1px solid #9a8873}
+
+/* ---------- LUPA (maior) ---------- */
+.magnifier{position:absolute;width:285px;height:285px;z-index:30;right:3%;bottom:3%;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;filter:drop-shadow(0 17px 12px #25150a47)}
+.magnifier.dragging{cursor:grabbing}
+.lens-ring{position:absolute;left:0;top:0;width:190px;height:190px;border-radius:50%;border:15px solid #403327d1;background:#fff1;box-shadow:inset 0 0 16px #ffffff73,0 0 0 2px #fff5;overflow:hidden}
+.lens-glass{position:absolute;inset:10px;border-radius:50%;overflow:hidden}
+.lens-content{position:absolute;inset:0;overflow:hidden;border-radius:50%;opacity:0}.lens-content.active{opacity:1}
+.lens-clone{position:absolute;transform-origin:0 0;pointer-events:none;perspective:1400px;-webkit-perspective:1400px}
+.lens-clone .letter-card{transition:none!important}
+.lens-shine{position:absolute;left:44px;top:32px;width:38px;height:17px;border-radius:50%;background:#fff6;transform:rotate(-35deg);filter:blur(1px)}
+.handle{position:absolute;left:153px;top:168px;width:132px;height:30px;border-radius:22px;background:linear-gradient(#674a31,#453121);transform:rotate(46deg);transform-origin:0 50%;box-shadow:inset 0 1px #fff3}
+
+/* ---------- DICA E BOTÃO ---------- */
+.hint{position:absolute;left:50%;top:48px;transform:translateX(-50%);width:min(560px,90vw);text-align:center;z-index:18;pointer-events:none;color:#fbf0df;font-size:13px;line-height:1.4;text-shadow:0 2px 6px #2d190a59}
+#backBtn{position:absolute;left:16px;bottom:18px;z-index:25;padding:10px 16px;border:1px solid #fff4;border-radius:999px;background:#3a2a1d99;color:#fbf0df;font-size:13px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+
+@media(max-width:650px){
+  .scene-title{font-size:12px}
+  .envelope-stage{top:43%;width:88vw}
+  .envelope-stage.envelope-away .envelope-holder{transform:translate(-25vw,20vh) scale(.62) rotate(-6deg)}
+  .env-word{font-size:34px}.env-back-text{font-size:24px}
+  .magnifier{transform:scale(.8);transform-origin:right bottom;right:1%;bottom:4%}
+}
+</style>
+</head>
+<body>
+<section id="lock">
+  <div class="lock-card">
+    <h1>Antes de abrir...</h1>
+    <p>Existe uma pequena lembrança entre nós que pode abrir isso.</p>
+    <input id="dateInput" type="tel" inputmode="numeric" maxlength="10" placeholder="DD / MM / AAAA" aria-label="Data">
+    <button id="openBtn">Lembrar</button>
+    <div id="error"></div>
+  </div>
+</section>
+
+<section id="experience" class="hidden">
+  <div class="scene-title">Para você, com carinho.</div>
+
+  <div class="envelope-stage" id="stage">
+    <div class="envelope-holder" id="envelopeHolder">
+      <div class="envelope closed" id="envelope">
+        <div class="env-back"><div class="env-back-text">uma carta que demorou, mas chegou</div></div>
+        <div class="env-pocket"></div>
+        <div class="env-flap" id="envFlap"></div>
+        <div class="env-word">Para você</div>
+        <div class="wax-seal" id="waxSeal"><span>♡</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="letter" id="letter">
+    <div class="letter-card" id="letterCard">
+      <div class="letter-face letter-front">
+        <div class="fake-note">uma carta para você...</div>
+        <div class="fake-lines"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="letter-face letter-back">
+        <div class="fake-back">verso da carta</div>
+        <div class="fake-back-lines"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">Pressione o selo de cera para abrir.</div>
+  <button id="backBtn" class="hidden">Guardar a carta</button>
+
+  <div class="magnifier" id="magnifier" aria-label="Lupa">
+    <div class="lens-ring"><div class="lens-glass"><div class="lens-content" id="lensContent"></div><div class="lens-shine"></div></div></div>
+    <div class="handle"></div>
+  </div>
+</section>
+
+<script>
+const lock = document.getElementById("lock");
+const experience = document.getElementById("experience");
+const input = document.getElementById("dateInput");
+const error = document.getElementById("error");
+const openBtn = document.getElementById("openBtn");
+
+const envelope = document.getElementById("envelope");
+const stage = document.getElementById("stage");
+const letter = document.getElementById("letter");
+const letterCard = document.getElementById("letterCard");
+const hint = document.getElementById("hint");
+const backBtn = document.getElementById("backBtn");
+const magnifier = document.getElementById("magnifier");
+const lensContent = document.getElementById("lensContent");
+const waxSeal = document.getElementById("waxSeal");
+const envFlap = document.getElementById("envFlap");
+
+const LENS_ZOOM = 2.4;   /* aumento da imagem dentro da lupa */
+
+function setHint(text){ if(hint) hint.textContent = text; }
+
+/* ---------- DATA ---------- */
+input.addEventListener("input", () => {
+  input.value = input.value.replace(/\D/g, "").slice(0, 8);
+});
+
+function unlock(){
+  const typedDate = input.value.replace(/\D/g, "");
+  if(typedDate === "10062026"){
+    lock.classList.add("hidden");
+    experience.classList.remove("hidden");
+    buildLensClone();
+  }else{
+    error.textContent = "Ahh... tenta lembrar quando foi a primeira vez que a gente se viu. 🤍";
+  }
+}
+openBtn.addEventListener("click", unlock);
+input.addEventListener("keydown", e => { if(e.key === "Enter") unlock(); });
+
+/* ---------- SELO ---------- */
+let timer = null;
+let sealBroken = false;
+let flapDrag = null;
+
+waxSeal.addEventListener("pointerdown", e => {
+  if(sealBroken) return;
+  waxSeal.setPointerCapture(e.pointerId);
+  setHint("Solte para romper o selo...");
+});
+
+waxSeal.addEventListener("pointerup", e => {
+  if(sealBroken) return;
+  sealBroken = true;
+  waxSeal.classList.add("broken");
+  envelope.classList.add("seal-broken");
+  setHint("Agora puxe a aba do envelope para cima.");
+  try{ waxSeal.releasePointerCapture(e.pointerId); }catch{}
+});
+
+/* ---------- ABA ---------- */
+envFlap.addEventListener("pointerdown", e => {
+  if(!sealBroken) return;
+  flapDrag = { id:e.pointerId, startY:e.clientY };
+  envFlap.setPointerCapture(e.pointerId);
+});
+
+envFlap.addEventListener("pointermove", e => {
+  if(!flapDrag) return;
+  const dy = e.clientY - flapDrag.startY;
+  const progress = Math.max(0, Math.min(1, -dy / 120));
+  envFlap.style.transform = `rotateX(${-160 * progress}deg)`;
+  if(progress > .2) setHint("Continue puxando...");
+});
+
+envFlap.addEventListener("pointerup", e => {
+  if(!flapDrag) return;
+  const dy = e.clientY - flapDrag.startY;
+  try{ envFlap.releasePointerCapture(e.pointerId); }catch{}
+  flapDrag = null;
+
+  if(dy < -50){
+    envFlap.style.transform = "";
+    envelope.classList.add("open");
+    setHint("A carta está saindo do envelope...");
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      experience.classList.add("letter-out");
+      setTimeout(() => {
+        letter.classList.add("table");
+        stage.classList.add("letter-table");
+        stage.classList.add("envelope-away");
+        envelopeRotation = 0;
+        envelope.style.transform = "";
+        backBtn.classList.remove("hidden");
+        setHint("Arraste a carta para os lados para virar. Use a lupa para ler de perto.");
+        buildLensClone();
+      }, 1400);
+    }, 500);
+  }else{
+    envFlap.style.transform = "";
+    setHint("Puxe a aba para cima.");
+  }
+});
+
+/* ---------- CARTA: GIRAR (arrastar) / VIRAR (toque) ---------- */
+let angle = 0;          /* ângulo atual da carta, em graus */
+let drag = null;
+
+function applyAngle(){ letterCard.style.transform = `rotateY(${angle}deg)`; }
+
+letter.addEventListener("pointerdown", e => {
+  if(!letter.classList.contains("table")) return;
+  drag = { id:e.pointerId, sx:e.clientX, base:angle, moved:false };
+  letter.setPointerCapture(e.pointerId);
+  letter.classList.add("dragging");
+});
+
+letter.addEventListener("pointermove", e => {
+  if(!drag || drag.id !== e.pointerId) return;
+  const dx = e.clientX - drag.sx;
+  if(Math.abs(dx) > 8) drag.moved = true;
+  if(!drag.moved) return;
+  angle = drag.base + dx * 0.6;
+  applyAngle();
+  updateMagnifier();
+});
+
+function endLetterDrag(e){
+  if(!drag || drag.id !== e.pointerId) return;
+  try{ letter.releasePointerCapture(e.pointerId); }catch{}
+  letter.classList.remove("dragging");
+
+  if(drag.moved){
+    angle = Math.round(angle / 180) * 180;   /* encaixa na frente ou no verso */
+  }else{
+    angle = drag.base + 180;                  /* toque simples vira a carta */
+  }
+  applyAngle();
+  drag = null;
+  setTimeout(updateMagnifier, 60);
+  setTimeout(updateMagnifier, 400);
+  setTimeout(updateMagnifier, 750);
+}
+letter.addEventListener("pointerup", endLetterDrag);
+letter.addEventListener("pointercancel", endLetterDrag);
+
+/* ---------- GUARDAR A CARTA ---------- */
+function sendBack(){
+  letter.classList.remove("table");
+  stage.classList.remove("envelope-away");
+  stage.classList.remove("letter-table");
+  experience.classList.remove("letter-out");
+  backBtn.classList.add("hidden");
+
+  angle = 0;
+  letterCard.style.transform = "";
+
+  envelope.classList.remove("open");
+  envelope.classList.add("closed");
+  sealBroken = false;
+  waxSeal.classList.remove("broken");
+  envelope.classList.remove("seal-broken");
+  envFlap.style.transform = "";
+
+  setHint("A carta voltou para o envelope.");
+  setTimeout(() => setHint("Pressione o selo de cera para abrir."), 1200);
+  setTimeout(updateMagnifier, 80);
+}
+backBtn.addEventListener("click", sendBack);
+
+/* ---------- GIRAR O ENVELOPE ---------- */
+let envelopeDrag = null;
+let envelopeRotation = 0;
+
+stage.addEventListener("pointerdown", e => {
+  if(e.target.closest("#letter") || e.target.closest("#magnifier") || e.target.closest("#waxSeal")) return;
+  if(e.target.closest("#envFlap")) return;
+  if(stage.classList.contains("letter-table")) return;
+  envelopeDrag = { id:e.pointerId, startX:e.clientX, startRotation:envelopeRotation };
+  stage.setPointerCapture(e.pointerId);
+});
+
+stage.addEventListener("pointermove", e => {
+  if(!envelopeDrag) return;
+  const dx = e.clientX - envelopeDrag.startX;
+  envelopeRotation = envelopeDrag.startRotation + dx * 0.7;
+  envelope.style.transform = `rotateY(${envelopeRotation}deg)`;
+});
+
+stage.addEventListener("pointerup", e => {
+  if(!envelopeDrag) return;
+  try{ stage.releasePointerCapture(e.pointerId); }catch{}
+  envelopeDrag = null;
+});
+stage.addEventListener("pointercancel", () => { envelopeDrag = null; });
+
+/* ---------- LUPA ---------- */
+let lensDrag = null, lensClone = null;
+
+function buildLensClone(){
+  lensContent.innerHTML = "";
+  lensClone = document.createElement("div");
+  lensClone.className = "lens-clone";
+  const card = letterCard.cloneNode(true);
+  card.removeAttribute("id");
+  card.querySelectorAll("[id]").forEach(n => n.removeAttribute("id"));
+  card.style.transition = "none";
+  lensClone.appendChild(card);
+  lensContent.appendChild(lensClone);
+  updateMagnifier();
+}
+
+function updateMagnifier(){
+  if(!lensClone || experience.classList.contains("hidden")) return;
+
+  const lr = letter.getBoundingClientRect();
+  const mr = lensContent.getBoundingClientRect();
+  const cx = mr.left + mr.width / 2;
+  const cy = mr.top + mr.height / 2;
+
+  const inside = letter.classList.contains("table") &&
+    cx >= lr.left && cx <= lr.right && cy >= lr.top && cy <= lr.bottom;
+
+  lensContent.classList.toggle("active", inside);
+  if(!inside) return;
+
+  const x = cx - lr.left, y = cy - lr.top;
+  lensClone.style.width  = lr.width + "px";
+  lensClone.style.height = lr.height + "px";
+  lensClone.style.left = (mr.width  / 2 - x * LENS_ZOOM) + "px";
+  lensClone.style.top  = (mr.height / 2 - y * LENS_ZOOM) + "px";
+  lensClone.style.transform = `scale(${LENS_ZOOM})`;
+
+  /* copia a rotação atual da carta (frente ou verso) para dentro da lupa */
+  lensClone.firstElementChild.style.transform = getComputedStyle(letterCard).transform;
+}
+
+magnifier.addEventListener("pointerdown", e => {
+  lensDrag = { id:e.pointerId, sx:e.clientX, sy:e.clientY, startLeft:magnifier.offsetLeft, startTop:magnifier.offsetTop };
+  magnifier.setPointerCapture(e.pointerId);
+  magnifier.classList.add("dragging");
+});
+magnifier.addEventListener("pointermove", e => {
+  if(!lensDrag || lensDrag.id !== e.pointerId) return;
+  let l = lensDrag.startLeft + e.clientX - lensDrag.sx;
+  let t = lensDrag.startTop  + e.clientY - lensDrag.sy;
+  l = Math.max(0, Math.min(innerWidth  - magnifier.offsetWidth,  l));
+  t = Math.max(35, Math.min(innerHeight - magnifier.offsetHeight, t));
+  magnifier.style.left = l + "px";
+  magnifier.style.top = t + "px";
+  magnifier.style.right = "auto";
+  magnifier.style.bottom = "auto";
+  updateMagnifier();
+});
+magnifier.addEventListener("pointerup", e => {
+  if(lensDrag && lensDrag.id === e.pointerId) magnifier.releasePointerCapture(e.pointerId);
+  lensDrag = null;
+  magnifier.classList.remove("dragging");
+  updateMagnifier();
+});
+magnifier.addEventListener("pointercancel", () => { lensDrag = null; magnifier.classList.remove("dragging"); });
+
+window.addEventListener("resize", () => setTimeout(() => { buildLensClone(); updateMagnifier(); }, 50));
+setInterval(updateMagnifier, 80);
+
+/* ---------- IMAGENS DA CARTA ---------- */
+/* Coloque assets/letter-front.png e assets/letter-back.png ao lado deste arquivo.
+   Mude para false se quiser ver a carta de teste (sem imagens). */
+const USE_REAL_IMAGES = true;
+
+if(USE_REAL_IMAGES){
+  const front = document.querySelector(".letter-front");
+  const back  = document.querySelector(".letter-back");
+
+  /* "background" (atalho) apaga a cor creme e o padrão de papel, então não sobra faixa nas bordas */
+  front.style.background = "url('assets/letter-front.png') center / 100% 100% no-repeat";
+  back.style.background  = "url('assets/letter-back.png') center / 100% 100% no-repeat";
+  back.style.padding = "0";
+  document.querySelectorAll(".fake-note,.fake-lines,.fake-back,.fake-back-lines").forEach(x => x.style.display = "none");
+
+  /* a carta assume a proporção real da imagem, então ela preenche tudo sem moldura */
+  const probe = new Image();
+  probe.onload = () => {
+    letter.style.setProperty("--ar", probe.naturalWidth / probe.naturalHeight);
+    buildLensClone();
+  };
+  probe.src = "assets/letter-front.png";
+}
+</script>
+</body>
+</html>
